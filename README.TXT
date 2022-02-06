@@ -1,0 +1,1 @@
+Since I love playing Dota 2 and I often use Discord with my friends, I decided to create an entertaining Discord bot. 
