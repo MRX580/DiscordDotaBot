@@ -1,6 +1,7 @@
 import discord
 import setting
 import random
+import asyncio
 from database.sqltie import database
 from discord.ext import commands
 
@@ -23,8 +24,7 @@ items = [
     'Diffusal Blade',
     'Divine Rapier', 'Dragon Lance', 'Drum of Endurance', 'Dust of Appearance', 'Eaglesong', 'Echo Sabre',
     'Enchanted Mango',
-    'Energy Booster', 'Ethereal Blade', 'Eul\'s Scepter of Divinity', 'Eye of Skadi', 'Faerie Fire'
-                                                                                      'Force Staff',
+    'Energy Booster', 'Ethereal Blade', 'Eul\'s Scepter of Divinity', 'Eye of Skadi', 'Faerie Fire', 'Force Staff',
     'Gauntlets of Strength', 'Gem of True Sight', 'Ghost Scepter', 'Glimmer Cape', 'Gloves of Haste',
     'Guardian Greaves', 'Hand of Midas', 'Headdress', 'Healing Salve', 'Heart of Tarrasque', 'Heaven\'s Halberd',
     'Helm of Iron Will', 'Helm of the Dominator', 'Hood of Defiance', 'Hurricane Pike', 'Hyperstone',
@@ -62,6 +62,20 @@ itemsNotAll = ['Crystalys', 'Boots of Travel 2', 'Helm of the Overlord', 'Magic 
                'Sange and Yasha', 'Yasha and Kaya', 'Satanic', 'Eye of Skadi', 'Mjollnir', 'Overwhelming Blink',
                'Swift Blink', 'Arcane Blink']
 
+notItems = ['Iron Branch',
+            'Gauntlets of Strength', 'Slippers of Agility', 'Mantle of Intelligence', 'Circlet', 'Belt of Strength',
+            'Band of Elvenskin', 'Robe of the Magi', 'Crown', 'Ogre Axe', 'Blade of Alacrity', 'Staff of Wizardry',
+            'Blitz Knuckles', 'Ring of Protection', 'Quelling Blade', 'Blight Stone', 'Orb of Venom',
+            'Blades of Attack',
+            'Chainmail', 'Quarterstaff', 'Helm of Iron Will', 'Broadsword', 'Claymore', 'Javelin', 'Mithril Hammer',
+            'Ring of Regen', 'Sage\'s Mask', 'Magic Stick', 'Fluffy Hat', 'Wind Lace', 'Cloak', 'Gloves of Haste',
+            'Boots of Speed',
+            'Morbid Mask', 'Voodoo Mask', 'Shadow Amulet', 'Ghost Scepter', 'Blink Dagger', 'Ring of Health',
+            'Void Stone', 'Energy Booster',
+            'Vitality Booster', 'Point Booster', 'Platemail', 'Talisman of Evasion', 'Hyperstone', 'Ultimate Orb',
+            'Demon Edge',
+            'Mystic Staff', 'Reaver', 'Eaglesong', 'Sacred Relic']
+
 heroStrength = ('Abbadon', 'Alchemist', 'Axe', 'Beastmaster', 'Brewmaster', 'Bristleback', 'Centaur Warrunner',
                 'Chaos Knight', 'Clockwerk', 'Dawnbreaker', 'Doom', 'Dragon Knight', 'Earth Spirit', 'Earthshaker',
                 'Elder Titan', 'Huskar', 'Io', 'Kunkka', 'Legion Commander', 'Lifestealer', 'Lycan', 'Magnus', 'Marci',
@@ -69,92 +83,95 @@ heroStrength = ('Abbadon', 'Alchemist', 'Axe', 'Beastmaster', 'Brewmaster', 'Bri
                 'Spirit Breaker', 'Sven', 'Tidehunter', 'Timbersaw', 'Tiny', 'Treant Protector', 'Tusk', 'Underlord',
                 'Undying', 'Wraith King')
 
-heroStrengthImg = ('https://static.wikia.nocookie.net/dota2_gamepedia/images/2/26/Abaddon_icon.png/revision/latest/scale-to-width-down/120?cb=20210125060638',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/fe/Alchemist_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210240',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/23/Axe_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211422',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d9/Beastmaster_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205834',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/1e/Brewmaster_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210333',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/4d/Bristleback_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210744',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/e/ed/Centaur_Warrunner_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210603',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/fe/Chaos_Knight_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212259',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d8/Clockwerk_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210004',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d6/Dawnbreaker_icon.png/revision/latest/scale-to-width-down/120?cb=20210410124439',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/40/Doom_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212104',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/59/Dragon_Knight_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205925',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/be/Earth_Spirit_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211247',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a5/Earthshaker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205323',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/1a/Elder_Titan_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210922',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d3/Huskar_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210201',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/8d/Io_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210451',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c0/Kunkka_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205729',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a2/Legion_Commander_icon.png/revision/latest/scale-to-width-down/120?cb=20190401095109',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/2b/Lifestealer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211952',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d6/Lycan_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212224',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/ba/Magnus_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212403',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/12/Marci_icon.png/revision/latest/scale-to-width-down/120?cb=20211029000514',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9d/Mars_icon.png/revision/latest/scale-to-width-down/120?cb=20190401094550',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/15/Night_Stalker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212027',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/e/e2/Omniknight_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210119',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/14/Phoenix_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211344',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c0/Pudge_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211506',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/79/Sand_King_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211544',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7e/Slardar_icon.png/revision/latest/scale-to-width-down/120?cb=20161213040814',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7a/Snapfire_icon.png/revision/latest/scale-to-width-down/120?cb=20191127043227',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/df/Spirit_Breaker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212138',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/1b/Sven_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205500',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d5/Tidehunter_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211651',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9a/Timbersaw_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210643',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/55/Tiny_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205608',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/3f/Treant_Protector_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210417',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/ce/Tusk_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210826',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/18/Underlord_icon.png/revision/latest/scale-to-width-down/120?cb=20160828140759',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/61/Undying_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212333',
-                'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/1e/Wraith_King_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211746')
+heroStrengthImg = (
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/26/Abaddon_icon.png/revision/latest/scale-to-width-down/120?cb=20210125060638',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/fe/Alchemist_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210240',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/23/Axe_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211422',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d9/Beastmaster_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205834',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/1e/Brewmaster_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210333',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/4d/Bristleback_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210744',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/e/ed/Centaur_Warrunner_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210603',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/fe/Chaos_Knight_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212259',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d8/Clockwerk_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210004',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d6/Dawnbreaker_icon.png/revision/latest/scale-to-width-down/120?cb=20210410124439',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/40/Doom_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212104',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/59/Dragon_Knight_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205925',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/be/Earth_Spirit_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211247',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a5/Earthshaker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205323',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/1a/Elder_Titan_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210922',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d3/Huskar_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210201',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/8d/Io_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210451',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c0/Kunkka_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205729',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a2/Legion_Commander_icon.png/revision/latest/scale-to-width-down/120?cb=20190401095109',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/2b/Lifestealer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211952',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d6/Lycan_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212224',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/ba/Magnus_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212403',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/12/Marci_icon.png/revision/latest/scale-to-width-down/120?cb=20211029000514',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9d/Mars_icon.png/revision/latest/scale-to-width-down/120?cb=20190401094550',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/15/Night_Stalker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212027',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/e/e2/Omniknight_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210119',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/14/Phoenix_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211344',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c0/Pudge_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211506',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/79/Sand_King_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211544',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7e/Slardar_icon.png/revision/latest/scale-to-width-down/120?cb=20161213040814',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7a/Snapfire_icon.png/revision/latest/scale-to-width-down/120?cb=20191127043227',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/df/Spirit_Breaker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212138',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/1b/Sven_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205500',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d5/Tidehunter_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211651',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9a/Timbersaw_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210643',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/55/Tiny_icon.png/revision/latest/scale-to-width-down/120?cb=20160411205608',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/3f/Treant_Protector_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210417',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/ce/Tusk_icon.png/revision/latest/scale-to-width-down/120?cb=20160411210826',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/18/Underlord_icon.png/revision/latest/scale-to-width-down/120?cb=20160828140759',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/61/Undying_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212333',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/1e/Wraith_King_icon.png/revision/latest/scale-to-width-down/120?cb=20160411211746')
 
 heroAgility = ('Anti-Mage', 'Arc Warden', 'Bloodseeker', 'Bounty Hunter', 'Broodmother', 'Clinkz', 'Drow Ranger',
                'Ember Spirit', 'Faceless Void', 'Gyrocopter', 'Hoodwink', 'Juggernaut', 'Lone Druid', 'Luna', 'Medusa',
-               'Meppo', 'Mirana', 'Monkey King', 'Morphling', 'Naga Siren', 'Nyx Assasin', 'Pangolier', 'Phantom Assasin',
+               'Meppo', 'Mirana', 'Monkey King', 'Morphling', 'Naga Siren', 'Nyx Assasin', 'Pangolier',
+               'Phantom Assasin',
                'Phantom Lanser', 'Razor', 'Riki', 'Shadow Fiend', 'Slark', 'Sniper', 'Spectre', 'Templar Assasin',
                'Terrorblade', 'Troll Warlord', 'Ursa', 'Vengeful Spirit', 'Venomanser', 'Viper', 'Weaver')
 
-heroAgilityImg = ('https://static.wikia.nocookie.net/dota2_gamepedia/images/8/8e/Anti-Mage_icon.png/revision/latest/scale-to-width-down/120?cb=20200916215957',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/0/07/Arc_Warden_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214723',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/56/Bloodseeker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213712',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a6/Bounty_Hunter_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213244',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/df/Broodmother_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214142',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/cb/Clinkz_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214114',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/80/Drow_Ranger_icon.png/revision/latest/scale-to-width-down/120?cb=20190325143546',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/91/Ember_Spirit_icon.png/revision/latest/scale-to-width-down/120?cb=20170417182614',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/73/Faceless_Void_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213936',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/4f/Gyrocopter_icon.png/revision/latest/scale-to-width-down/120?cb=20181101233643',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c9/Hoodwink_icon.png/revision/latest/scale-to-width-down/120?cb=20201217205959',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/0/03/Juggernaut_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212710',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/5d/Lone_Druid_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213427',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7d/Luna_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213209',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/cc/Medusa_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214604',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/85/Meepo_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214421',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/12/Mirana_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212744',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7b/Monkey_King_icon.png/revision/latest/scale-to-width-down/120?cb=20161222035035',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7b/Morphling_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212816',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/60/Naga_Siren_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213513',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/fa/Nyx_Assassin_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214454',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/4e/Pangolier_icon.png/revision/latest/scale-to-width-down/120?cb=20180831204401',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/8e/Phantom_Assassin_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214013',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/81/Phantom_Lancer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212849',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/66/Razor_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213830',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7d/Riki_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212958',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/36/Shadow_Fiend_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213752',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/aa/Slark_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214526',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/51/Sniper_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213053',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/ff/Spectre_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214336',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9c/Templar_Assassin_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213131',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/52/Terrorblade_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214652',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/f0/Troll_Warlord_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213539',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/40/Ursa_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213321',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/20/Vengeful_Spirit_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212927',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/25/Venomancer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213902',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/5f/Viper_icon.png/revision/latest/scale-to-width-down/120?cb=20161213040756',
-               'https://static.wikia.nocookie.net/dota2_gamepedia/images/0/09/Weaver_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214233')
+heroAgilityImg = (
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/8e/Anti-Mage_icon.png/revision/latest/scale-to-width-down/120?cb=20200916215957',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/0/07/Arc_Warden_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214723',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/56/Bloodseeker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213712',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a6/Bounty_Hunter_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213244',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/df/Broodmother_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214142',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/cb/Clinkz_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214114',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/80/Drow_Ranger_icon.png/revision/latest/scale-to-width-down/120?cb=20190325143546',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/91/Ember_Spirit_icon.png/revision/latest/scale-to-width-down/120?cb=20170417182614',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/73/Faceless_Void_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213936',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/4f/Gyrocopter_icon.png/revision/latest/scale-to-width-down/120?cb=20181101233643',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c9/Hoodwink_icon.png/revision/latest/scale-to-width-down/120?cb=20201217205959',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/0/03/Juggernaut_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212710',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/5d/Lone_Druid_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213427',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7d/Luna_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213209',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/cc/Medusa_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214604',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/85/Meepo_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214421',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/12/Mirana_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212744',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7b/Monkey_King_icon.png/revision/latest/scale-to-width-down/120?cb=20161222035035',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7b/Morphling_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212816',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/60/Naga_Siren_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213513',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/fa/Nyx_Assassin_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214454',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/4e/Pangolier_icon.png/revision/latest/scale-to-width-down/120?cb=20180831204401',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/8e/Phantom_Assassin_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214013',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/81/Phantom_Lancer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212849',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/66/Razor_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213830',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/7d/Riki_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212958',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/36/Shadow_Fiend_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213752',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/aa/Slark_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214526',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/51/Sniper_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213053',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/ff/Spectre_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214336',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9c/Templar_Assassin_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213131',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/52/Terrorblade_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214652',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/f0/Troll_Warlord_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213539',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/40/Ursa_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213321',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/20/Vengeful_Spirit_icon.png/revision/latest/scale-to-width-down/120?cb=20160411212927',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/25/Venomancer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411213902',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/5/5f/Viper_icon.png/revision/latest/scale-to-width-down/120?cb=20161213040756',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/0/09/Weaver_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214233')
 
 heroIntelligence = ('Ancient Apparition', 'Bane', 'Batrider', 'Chen', 'Cristal Maiden', 'Dark Seer', 'Dark Willow',
                     'Dazzle', 'Death Prophet', 'Disraptor', 'Enchantress', 'Enigma', 'Grimstroke', 'Invoker', 'Jakiro',
@@ -164,54 +181,191 @@ heroIntelligence = ('Ancient Apparition', 'Bane', 'Batrider', 'Chen', 'Cristal M
                     'Ebanaya Huinya(Techies)', 'Tinker', 'Visage', 'Void Spirit', 'Warlock', 'Windranger',
                     'Winter Wyvern', 'Withc Doctor', 'Zeus')
 
-heroIntelligenceImg = ('https://static.wikia.nocookie.net/dota2_gamepedia/images/6/67/Ancient_Apparition_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220816',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c3/Bane_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215925',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/f2/Batrider_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220708',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/61/Chen_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215432',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/27/Crystal_Maiden_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214805',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c5/Dark_Seer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220632',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/3c/Dark_Willow_icon.png/revision/latest/scale-to-width-down/120?cb=20180831204518',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/e/e6/Dazzle_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220519',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d7/Death_Prophet_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220408',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/97/Disruptor_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215651',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/41/Enchantress_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215320',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/f7/Enigma_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220156',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d7/Grimstroke_icon.png/revision/latest/scale-to-width-down/120?cb=20180831203927',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/0/00/Invoker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220849',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/2f/Jakiro_icon.png/revision/latest/scale-to-width-down/120?cb=20170507134250',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/b9/Keeper_of_the_Light_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215721',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/26/Leshrac_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220559',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/bb/Lich_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215954',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/35/Lina_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215059',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/b8/Lion_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220032',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c4/Nature%27s_Prophet_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215241',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a6/Necrophos_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220233',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/e/e0/Ogre_Magi_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215538',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/72/Oracle_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215824',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/10/Outworld_Destroyer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220923',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/13/Puck_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214839',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/cd/Pugna_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220442',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a1/Queen_of_Pain_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220334',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/8a/Rubick_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215614',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/f3/Shadow_Demon_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220956',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/96/Shadow_Shaman_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215130',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9f/Silencer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215503',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/bf/Skywrath_Mage_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215753',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/13/Storm_Spirit_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214914',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/fa/Techies_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215855',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d1/Tinker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215201',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9e/Visage_icon.png/revision/latest/scale-to-width-down/120?cb=20160411221032',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/99/Void_Spirit_icon.png/revision/latest/scale-to-width-down/120?cb=20210413204208',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/3f/Warlock_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220306',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/60/Windranger_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214951',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/4a/Winter_Wyvern_icon.png/revision/latest/scale-to-width-down/120?cb=20160411221057',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/33/Witch_Doctor_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220105',
-                    'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/3f/Zeus_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215025')
+heroIntelligenceImg = (
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/67/Ancient_Apparition_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220816',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c3/Bane_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215925',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/f2/Batrider_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220708',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/61/Chen_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215432',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/27/Crystal_Maiden_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214805',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c5/Dark_Seer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220632',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/3c/Dark_Willow_icon.png/revision/latest/scale-to-width-down/120?cb=20180831204518',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/e/e6/Dazzle_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220519',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d7/Death_Prophet_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220408',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/97/Disruptor_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215651',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/41/Enchantress_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215320',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/f7/Enigma_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220156',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d7/Grimstroke_icon.png/revision/latest/scale-to-width-down/120?cb=20180831203927',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/0/00/Invoker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220849',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/2f/Jakiro_icon.png/revision/latest/scale-to-width-down/120?cb=20170507134250',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/b9/Keeper_of_the_Light_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215721',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/26/Leshrac_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220559',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/bb/Lich_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215954',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/35/Lina_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215059',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/b8/Lion_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220032',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c4/Nature%27s_Prophet_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215241',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a6/Necrophos_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220233',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/e/e0/Ogre_Magi_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215538',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/72/Oracle_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215824',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/10/Outworld_Destroyer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220923',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/13/Puck_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214839',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/cd/Pugna_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220442',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a1/Queen_of_Pain_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220334',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/8a/Rubick_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215614',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/f3/Shadow_Demon_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220956',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/96/Shadow_Shaman_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215130',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9f/Silencer_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215503',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/bf/Skywrath_Mage_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215753',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/13/Storm_Spirit_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214914',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/f/fa/Techies_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215855',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/d/d1/Tinker_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215201',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9e/Visage_icon.png/revision/latest/scale-to-width-down/120?cb=20160411221032',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/99/Void_Spirit_icon.png/revision/latest/scale-to-width-down/120?cb=20210413204208',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/3f/Warlock_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220306',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/6/60/Windranger_icon.png/revision/latest/scale-to-width-down/120?cb=20160411214951',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/4a/Winter_Wyvern_icon.png/revision/latest/scale-to-width-down/120?cb=20160411221057',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/33/Witch_Doctor_icon.png/revision/latest/scale-to-width-down/120?cb=20160411220105',
+'https://static.wikia.nocookie.net/dota2_gamepedia/images/3/3f/Zeus_icon.png/revision/latest/scale-to-width-down/120?cb=20160411215025')
+
+quizItem = {
+    'Crystalys': 'Broadsword, Blades of Attack, Рецепт',
+    'Boots of Travel 2': 'Boots of Travel, Рецепт',
+    'Boots of Travel': 'Boots of Speed, Рецепт',
+    'Helm of the Overlord': 'Helm of the Dominator, Vladimi\'s Offering, Рецепт',
+    'Magic Wand': 'Iron Branch, Iron Branch, Magic Stick, Рецепт',
+    'Null Talisman': 'Mantle of Intelligence, Circlet, Рецепт',
+    'Wraith Band': 'Slippers of Agility, Circlet, Рецепт',
+    'Bracer': 'Gauntlets of Strength, Circlet, Рецепт',
+    'Soul Ring': 'Gauntlets of Strength, Gauntlets of Strength, Ring of Protection, Рецепт',
+    'Orb of Corrosion': 'Blight Stone, Orb of Venom, Fluffy Hat, Рецепт',
+    'Falcon Blade': 'Blades of Attack, Sage\'s Mask, Fluffy Hat, Рецепт',
+    'Power Treads': 'Belt of Strength, Gloves of Haste, Boots of Speed',
+    'Phase Boots': 'Blades of Attack, Chainmail, Boots of Speed',
+    'Oblivion Staff': 'Quarterstaff, Sage\'s Mask, Robe of the Magi',
+    'Perseverance': 'Ring of Health, Void Stone',
+    'Mask of Madness': 'Quarterstaff, Morbid Mask',
+    'Hand of Midas': 'Gloves of Haste, Рецепт',
+    'Helm of the Dominator': 'Crown, Helm of Iron Will, Рецепт',
+    'Buckler': 'Ring of Protection, Рецепт',
+    'Ring of Basilius': 'Sage\'s Mask, Рецепт',
+    'Headdress': 'Ring of Regen, Рецепт',
+    'Urn of Shadows': 'Circlet, Ring of Protection, Sage\'s Mask, Рецепт',
+    'Tranquil Boots': 'Ring of Regen, Wind Lace, Boots of Speed',
+    'Medallion of Courage': 'Blight Stone, Chainmail, Sage\'s Mask',
+    'Arcane Boots': 'Boots of Speed, Energy Booster',
+    'Drum of Endurance': 'Belt of Strength, Robe of the Magi, Wind Lace, Рецепт',
+    'Holy Locket': 'Magic Wand, Fluffy Hat, Energy Booster, Рецепт',
+    'Veil of Discord': 'Crown, Рецепт',
+    'Glimmer Cape': 'Cloak, Shadow Amulet, Рецепт',
+    'Force Staff': 'Staff of Wizardry, Fluffy Hat, Рецепт',
+    'Aether Lens': 'Void Stone, Energy Booster, Рецепт',
+    'Witch Blade': 'Robe of the Magi, Blitz Knuckles, Chainmail, Рецепт',
+    'Eul\'s Scepter of Divinity': 'Staff of Wizardry, Wind Lace, Void Stone, Рецепт',
+    'Rod of Atos': 'Crown, Crown, Staff of Wizardry, Рецепт',
+    'Dagon': 'Crown, Staff of Wizardry, Рецепт',
+    'Orchid Malevolence': 'Oblivion Staff, Oblivion Staff, Рецепт',
+    'Solar Crest': 'Crown, Wind Lace, Medallion of Courage, Рецепт',
+    'Aghanim\'s Scepter': 'Ogre Axe, Blade of Alacrity, Staff of Wizardry, Point Booster',
+    'Refresher Orb': 'Perseverance, Perseverance, ',
+    'Octarine Core': 'Aether Lens, Soul Booster',
+    'Scythe of Vyse': 'Void Stone, Ultimate Orb, Mystic Staff',
+    'Gleipnir': 'Maelstorm, Rod Of Atos, Рецепт',
+    'Wind Waker': 'Mystic Staff, Eul\'s Scepter of Divinity, Рецепт',
+    'Meteor Hammer': 'Crown, Perseverance, Рецепт',
+    'Armlet of Mordiggian': 'Blades of Attack, Helm of Iron Will, Gloves of Haste, Рецепт',
+    'Skull Basher': 'Belt of Strength, Mithril Hammer, Рецепт',
+    'Shadow Blade': 'Blitz Knuckles, Broadsword, Shadow Amulet',
+    'Desolator': 'Blight Stone, Mithril Hammer, Mithril Hammer',
+    'Battle Fury': 'Quelling Blade, Broadsword, Claymore, Perseverance',
+    'Ethereal Blade': 'Ghost Scepter, Eaglesong',
+    'Nullifier': 'Helm of Iron Will, Sacred Relic',
+    'Monkey King Bar': 'Blitz Knuckles, Javelin, Demon Edge',
+    'Butterfly': 'Quarterstaff, Talisman of Evasion, Eaglesong',
+    'Radiance': 'Sacred Relic, Рецепт',
+    'Daedalus': 'Demon Edge, Crystalys, Рецепт',
+    'Silver Edge': 'Shadow Blade, Crystalys, Рецепт',
+    'Divine Rapier': 'Demon Edge, Sacred Relic',
+    'Bloodthorn': 'Hyperstone, Orchid Malevolence, Рецепт',
+    'Abyssal Blade': 'Skull Basher, Vanguard, Рецепт',
+    'Hood of Defiance': 'Ring of Regen, Cloak, Ring of Health',
+    'Vanguard': 'Ring of Health, Vitality Booster',
+    'Blade Mail': 'Chainmail, Broadsword, Рецепт',
+    'Aeon Disk': 'Energy Booster, Vitality Booster, Рецепт',
+    'Soul Booster': 'Energy Booster, Vitality Booster, Point Booster',
+    'Eternal Shroud': 'Voodoo Mask, Hood of Defiance, Рецепт',
+    'Crimson Guard': 'Helm of Iron Will, Vanguard, Рецепт',
+    'Lotus Orb': 'Energy Booster, Perseverance, Platemail',
+    'Black King Bar': 'Ogre Axe, Mithril Hammer, Рецепт',
+    'Hurricane Pike': 'Dragon Lance, Force Staff, Рецепт',
+    'Manta Style': 'Ultimate Orb, Yasha, Рецепт',
+    'Linken\'s Sphere': 'Perseverance, Ultimate Orb, Рецепт',
+    'Shiva\'s Guard': 'Platemail, Mystic Staff, Рецепт',
+    'Heart of Tarrasque': 'Vitality Booster, Reaver, Рецепт',
+    'Assault Cuirass': 'Platemail, Hyperstone, Рецепт',
+    'Bloodstone': 'Voodoo Mask, Soul Booster, Kaya',
+    'Dragon Lance': 'Band of Elvenskin, Ogre Axe, Band of Elvenskin',
+    'Sange': 'Belt of Strength, Ogre Axe, Рецепт',
+    'Yasha': 'Band of Elvenskin, Blade of Alacrity, Рецепт',
+    'Kaya': 'Robe of the Magi, Staff of Wizardry, Рецепт',
+    'Echo Sabre': 'Ogre Axe, Oblivion Staff',
+    'Maelstrom': 'Javelin, Mithril Hammer',
+    'Diffusal Blade': 'Robe of the Magi, Blade of Alacrity, Blade of Alacrity, Рецепт',
+    'Mage Slayer': 'Cloak, Oblivion Staff, Рецепт',
+    'Heaven\'s Halberd': 'Talisman of Evasion, Sange, Рецепт',
+    'Kaya and Sange': 'Sange, Kaya',
+    'Sange and Yasha': 'Sange, Yasha',
+    'Yasha and Kaya': 'Yasha, Kaya',
+    'Satanic': 'Claymore, Morbid Mask, Reaver',
+    'Eye of Skadi': 'Point Booster, Ultimate Orb, Ultimate Orb',
+    'Mjollnir': 'Hyperstone, Maelstorm, Рецепт',
+    'Overwhelming Blink': 'Blink Dagger, Reaver, Рецепт',
+    'Swift Blink': 'Blink Dagger, Eaglesong, Рецепт',
+    'Arcane Blink': 'Blink Dagger, Mystic Staff, Рецепт',
+    'Vladimi\'s Offering': 'Blades of Attack, Morbid Mask, Рецепт',
+    'Mekansm': 'Chainmail, Headdress, Рецепт',
+    'Spirit Vessel': 'Vitality Booster, Urn of Shadows, Рецепт',
+    'Moon Shard': 'Hyperstone, Hyperstone',
+}
 
 allHero = heroStrength + heroAgility + heroIntelligence
 allHeroImg = heroStrengthImg + heroAgilityImg + heroIntelligenceImg
 client = commands.Bot(command_prefix='/', intents=discord.Intents.all())
 
+async def quizz():
+    time = 15
+    await asyncio.sleep(time)
+    random_item = itemsNotAll[random.randint(0, len(itemsNotAll) - 1)]
+    mass = []
+    right_quiz = random.randint(1, 4)
+    for i in range(1, 5):
+        if i == right_quiz:
+            mass.append(quizItem[random_item])
+        else:
+            mass.append(quizItem[itemsNotAll[random.randint(0, len(itemsNotAll) - 1)]])
+    database().add_quiz(right_quiz)
+    emb = discord.Embed(title=f'Из чего крафтится {random_item}', color=discord.Colour.blue())
+    emb.add_field(name='1', value=mass[0], inline=False)
+    emb.add_field(name='2', value=mass[1], inline=False)
+    emb.add_field(name='3', value=mass[2], inline=False)
+    emb.add_field(name='4', value=mass[3], inline=False)
+    await client.get_channel(939656305168248842).send(embed=emb)
+    await quizz()
+    # await client.get_channel(939656305168248842).send('hello')
+
+
+@client.command()
+async def quiz(ctx, answer):
+    if not database().isQuiz():
+        if not database(ctx.author, ctx.author.id).isQuizUser():
+            if answer == database().get_correct_quiz():
+                await ctx.send('Right')
+                database().close_quiz()
+            else:
+                database(ctx.author, ctx.author.id).close_quiz_user()
+                await ctx.send('False')
+        else:
+            await ctx.send('Вы уже дали ответ')
+    else:
+        await ctx.send('Уже был дан правильный ответ викторина будет в течении часа')
 
 @client.event
 async def on_ready():
@@ -297,7 +451,7 @@ async def rollhero(ctx, arg=None):
     elif arg.lower() == 'ловкость':
         rand = random.randint(0, len(heroAgility) - 1)
         emb = discord.Embed(title=str(heroAgility[rand]), color=discord.Colour.blue())
-        emb.set_image( url= str(heroAgilityImg[rand]))
+        emb.set_image(url=str(heroAgilityImg[rand]))
         await ctx.send(embed=emb)
 
     elif arg.lower() == 'интелект':
@@ -329,5 +483,5 @@ async def roll(ctx, *arg):
 # Connect
 
 token = setting.TOKEN
-
+client.loop.create_task(quizz())
 client.run(token)
