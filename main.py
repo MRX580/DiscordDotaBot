@@ -1,16 +1,19 @@
 import discord
-import setting
 import random
 import asyncio
 from database.sqltie import database
 from discord.ext import commands
+from dotenv import load_dotenv, find_dotenv
+import os
+
+load_dotenv(find_dotenv())
 
 ROLES = {
-    '1️⃣': 939606779157966848,
-    '2️⃣': 939607566911152199,
-    '3️⃣': 939628630340927488,
-    '4️⃣': 939628719654436864,
-    '5️⃣': 939628793142861826,
+    '1️⃣': 1076475660291289129,
+    '2️⃣': 1076475736598249562,
+    '3️⃣': 1076475791073886260,
+    '4️⃣': 1076475895725965322,
+    '5️⃣': 1076476013648805950,
 }
 
 items = [
@@ -331,7 +334,7 @@ allHeroImg = heroStrengthImg + heroAgilityImg + heroIntelligenceImg
 client = commands.Bot(command_prefix='/', intents=discord.Intents.all())
 
 async def quizz():
-    time = 15
+    time = 3600
     await asyncio.sleep(time)
     random_item = itemsNotAll[random.randint(0, len(itemsNotAll) - 1)]
     mass = []
@@ -347,7 +350,7 @@ async def quizz():
     emb.add_field(name='2', value=mass[1], inline=False)
     emb.add_field(name='3', value=mass[2], inline=False)
     emb.add_field(name='4', value=mass[3], inline=False)
-    await client.get_channel(939656305168248842).send(embed=emb)
+    await client.get_channel(1082783333521571861).send(embed=emb)
     await quizz()
     # await client.get_channel(939656305168248842).send('hello')
 
@@ -367,12 +370,14 @@ async def quiz(ctx, answer):
     else:
         await ctx.send('Уже был дан правильный ответ викторина будет в течении часа')
 
+
 @client.event
 async def on_ready():
     print('Bot connected')
     for guild in client.guilds:
         for member in guild.members:
             database(member, member.id).add_user()
+    client.loop.create_task(quizz())
 
 
 @client.event
@@ -382,7 +387,7 @@ async def on_member_join(member):
 
 @client.event
 async def on_raw_reaction_add(payload):
-    if payload.message_id == 939686135259619409:
+    if payload.message_id == 1082778934879453305:
         channel = client.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         member = discord.utils.get(message.guild.members,
@@ -482,6 +487,6 @@ async def roll(ctx, *arg):
 
 # Connect
 
-token = setting.TOKEN
-client.loop.create_task(quizz())
+token = os.getenv('TOKEN')
+
 client.run(token)
